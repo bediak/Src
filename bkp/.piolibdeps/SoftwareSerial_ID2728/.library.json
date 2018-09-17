@@ -1,0 +1,41 @@
+{
+    "name": "SoftwareSerial", 
+    "repository": {
+        "url": "https://os.mbed.com/users/chag/code/SoftwareSerial/", 
+        "type": "hg"
+    }, 
+    "platforms": [
+        "atmelsam", 
+        "freescalekinetis", 
+        "maxim32", 
+        "nordicnrf51", 
+        "nordicnrf52", 
+        "nxplpc", 
+        "siliconlabsefm32", 
+        "ststm32", 
+        "teensy", 
+        "wiznet7500"
+    ], 
+    "frameworks": [
+        "mbed"
+    ], 
+    "version": "25b087be29", 
+    "examples": [
+        "https://os.mbed.com/users/chag/code/SoftwareUART/"
+    ], 
+    "authors": [
+        {
+            "url": "https://os.mbed.com/users/chag/", 
+            "maintainer": false, 
+            "email": null, 
+            "name": "chag"
+        }
+    ], 
+    "keywords": [
+        "uart", 
+        "serial", 
+        "softwareserial"
+    ], 
+    "id": 2728, 
+    "description": "ALPHA WORK IN PROGRESS. DO NOT USE IN PRODUCTION CODE. based on:\\\\ IAR Application Note G - 001 Generic Software UART\\\\ mbed/trunk/Serial.h\\\\ the venerable Andy Kirkham's MAX3100\\\\"
+}

@@ -1,0 +1,43 @@
+*Pick And Place List
+*Company=
+*Author=
+*eMail=
+*
+*Project=button-01
+*Date=21:30:22
+*CreatedBy=Fritzing 0.9.3b.04.19.5c895d327c44a3114e5fcc9d8260daf0cbb52806
+*
+*
+*Coordinates in mm, always center of component
+*Origin 0/0=Lower left corner of PCB
+*Rotation in degree (0-360, math. pos.)
+*
+*No;Value;Package;X;Y;Rotation;Side;Name
+1;470;0603 [SMD];8.78928;-31.8381;90;Top;R2
+2;;tactile_switch_tall;42.0393;-11.9631;90;Top;S4
+3;470;0603 [SMD];38.1393;-32.2881;0;Top;R5
+4;;0603-cap;33.0893;-40.8381;90;Top;C1
+5;100nF;0603 [SMD, multilayer];28.9393;-33.7881;0;Top;C3
+6;470;0603 [SMD];38.1393;-33.7881;0;Top;R7
+7;;led-tricolor-smd;42.0122;-32.3881;0;Top;LED2
+8;;THT;26.9893;-19.5181;-90;Bottom;J1
+9;10k;0603 [SMD];46.8893;-12.1381;90;Top;R11
+10;;tactile_switch_tall;42.0393;-39.9631;90;Top;S3
+11;4.7k;0603 [SMD];26.6393;-48.7881;0;Top;R12
+12;;SO;26.9243;-7.75359;0;Bottom;U2
+13;;tqfp;27.0544;-31.2669;-180;Bottom;U1
+14;470;0603 [SMD];45.2893;-32.4381;90;Top;R6
+15;10k;0603 [SMD];6.33928;-11.8881;90;Top;R9
+16;;0603-cap;20.0393;-39.8881;90;Top;C2
+17;;tactile_switch_tall;12.0393;-11.9631;90;Top;S2
+18;;;27.6801;-45.6659;0;Bottom;DS1
+19;10k;0603 [SMD];46.9893;-40.0381;90;Top;R10
+20;;THT;26.9349;-39.9873;0;Bottom;XTAL1
+21;;led-tricolor-smd;11.9008;-32.3881;0;Top;LED1
+22;470;0603 [SMD];15.9393;-33.8881;0;Top;R4
+23;470;0603 [SMD];15.9393;-32.0881;-180;Top;R3
+24;10k;0603 [SMD];6.33928;-39.6881;90;Top;R8
+25;;;27.0792;-30.9725;0;Bottom;blkr1
+26;;tactile_switch_tall;12.0393;-39.9631;90;Top;S1
+27;;THT;26.9593;-15.2881;-90;Bottom;(R12 120ohm)
+28;10k;0603 [SMD];25.3393;-33.7881;0;Top;R1

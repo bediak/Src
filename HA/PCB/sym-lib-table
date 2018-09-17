@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name HA-rescue)(type Legacy)(uri ${KIPRJMOD}/HA-rescue.lib)(options "")(descr ""))
+  (lib (name ATMEGA328P-AU)(type Legacy)(uri P:/Src/HAB/pcb/lib/ATMEGA328P-AU/ATMEGA328P-AU.lib)(options "")(descr ""))
+)

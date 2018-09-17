@@ -1,0 +1,18 @@
+#include "Arduino.h"
+#include "HabCom/HabCom.h"
+
+
+HabCom com(9600);
+
+int i = 0;
+
+void setup() {
+  com.begin();
+  com.println(i++);
+}
+
+void loop() {
+  com.println(i++);
+  delay(1000);
+  com.blink();
+}
