@@ -7,7 +7,9 @@
 
 #define DbgMsg(value) (Serial.println(value))
 // #define DbgMsg(value)
-#define BTN_COUNT 2
+#define BTN_COUNT 4
+
+// nastavit dle zapojení
 #define RX_RO 11
 #define TX_DI 12
 #define TXE 10
@@ -15,20 +17,23 @@
 bool changed = false;
 bool HeartBeatReceived = false;
 
+//TODO: nastavit tlačítka dle zapojení
 ClickButton btn[BTN_COUNT] = {
   ClickButton(4, HIGH, false),
-  ClickButton(5, HIGH, false)
+  ClickButton(5, HIGH, false),
+  ClickButton(6, HIGH, false),
+  ClickButton(7, HIGH, false)
 };
 
 unsigned long MsgSlotZeroTime;
 
+//TODO: nastavit piny pro LED dle zapojení
 byte ledPins[] = {8, 9};
 
 byte myID;
-byte dataRaw[4];
+byte dataRaw[HABCOM_MSG_LENGTH_BYTES];
 byte data_length=0;
 HabComMsg msg = {0,0,CMD_NOT,0};
-
 
 SoftwareSerial rs485(RX_RO,TX_DI);
 
@@ -64,11 +69,21 @@ inline bool IsHeartBeat(HabComMsg &msg) {
   return (msg.Source == HABCOM_MASTER_ADDR && msg.Target == HABCOM_TARGET_BROADCAST && msg.Cmd == HEART_BEAT);
 }
 
-void MsgDataParse(byte *dataRAW, HabComMsg &msg) {
+inline void MsgDataDecode(byte *dataRAW, HabComMsg &msg) {
   msg.Source = dataRaw[0] >> 2;
   msg.Target = (dataRaw[0] & 0b11) << 4 | dataRaw[1] >> 4;
   msg.Cmd    = (HabComCmd)(dataRaw[1] & 15);
   msg.Data   = (word)dataRaw[2] << 8 | (word)dataRaw[3];
+}
+
+inline void MsgDataEncode(byte *dataRAW, HabComMsg &msg) {
+  dataRAW[0] = ((byte)msg.Source) << 2 | (((byte)msg.Target) >> 4) & 15;
+  dataRAW[1] = ((byte)msg.Target) << 2 | (((byte)msg.Cmd) >> 4) & 15;
+}
+
+void MsgSend(word *data) {
+
+  sendMsg(fWrite, *data, HABCOM_MSG_LENGTH_BYTES );
 }
 
 void setup() {
@@ -101,7 +116,7 @@ void setup() {
     if (data_length != 4) continue;
 
     MsgSlotZeroTime = micros();
-    MsgDataParse(dataRaw, msg);
+    MsgDataDecode(dataRaw, msg);
 
     HeartBeatReceived = IsHeartBeat(msg);
   }
@@ -121,5 +136,5 @@ void loop() {
     // int func = btn[i].clicks;
 
   }
-  delay(5);
+  delayMicroseconds(4);
 }
