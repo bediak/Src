@@ -84,6 +84,7 @@ inline void MsgDataEncode(byte *dataRAW, HabComMsg &msg) {
 void MsgSend(word *data) {
 
   MsgDataEncode();
+  
 
   sendMsg(fWrite, *data, HABCOM_MSG_LENGTH_BYTES );
 }
