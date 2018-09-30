@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <Arduino.h>
-#include <MySoftSerial.h>
+#include "MySoftSerial.h"
 #include <util/delay_basic.h>
 
 //
