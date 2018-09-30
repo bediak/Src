@@ -8,14 +8,14 @@
 #define EasyCom_h
 
 #include <Arduino.h>
-
-// class SoftwareSerial;
+#include <MySoftSerial.h>
 
 class EasyCom
 {
   public:
     EasyCom(unsigned int speed = 9600);
     EasyCom(int TX, int RX, unsigned int speed = 9600);
+    void setBaudrate(unsigned int speed);
     void setSwPins(int TX, int RX);
     bool begin();
     int available();
@@ -25,9 +25,9 @@ class EasyCom
     void blink(byte count = 3, int duration = 200);
 
   private:
-    // SoftwareSerial &_COM;
-    int _speed, _TX, _RX;
+    MySoftSerial _COM = MySoftSerial();
     bool _HwSerialUsed;
+    int _speed, _TX, _RX;
 };
 
 #endif

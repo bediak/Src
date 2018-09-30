@@ -1,23 +1,31 @@
 #include <Arduino.h>
 #include "EasyCom.h"
 
-EasyCom::EasyCom(unsigned int speed /* = 9600 */) {
-    _HwSerialUsed = true;
-    _speed = speed;
+EasyCom::EasyCom(unsigned int speed /* = 9600 */) :
+  _HwSerialUsed(true),
+  _speed(speed)
+{
 }
 
-EasyCom::EasyCom(int TX, int RX, unsigned int speed /* = 9600 */) {
-  _HwSerialUsed = false;
+EasyCom::EasyCom(int TX, int RX, unsigned int speed /* = 9600 */) :
+  _HwSerialUsed(false),
+  _speed(speed),
+  _TX(TX),
+  _RX(RX)
+{
+  _COM.setPins(RX, TX);
+}
+
+
+void EasyCom::setBaudrate(unsigned int speed) {
   _speed = speed;
-  _TX = TX;
-  _RX = RX;
 }
 
-
-void EasyCom::setSwPins(int TX, int RX) {
+void EasyCom::setSwPins(int RX, int TX) {
   _HwSerialUsed = false;
   _TX = TX;
   _RX = RX;
+  _COM.setPins(RX, TX);
 }
 
 bool EasyCom::begin() {
