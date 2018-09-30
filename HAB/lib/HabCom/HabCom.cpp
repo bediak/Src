@@ -1,17 +1,20 @@
 #include <Arduino.h>
 #include "HabCom.h"
-#include <SoftwareSerial.h>
+#include <MySoftSerial.h>
 
-HabCom::HabCom(unsigned int speed /* = 9600 */) {
-  _HwSerialUsed = true;
-  _speed = speed;
+HabCom::HabCom(unsigned int speed /* = 9600 */) :
+  _HwSerialUsed(true),
+  _speed(speed)
+{
 }
 
-HabCom::HabCom(int RX, int TX, unsigned int speed /* = 9600 */) {
-  _HwSerialUsed = false;
-  _speed = speed;
-  _TX = TX;
-  _RX = RX;
+HabCom::HabCom(int RX, int TX, unsigned int speed /* = 9600 */) :
+  _HwSerialUsed(false),
+  _speed(speed),
+  _TX(TX),
+  _RX(RX)
+{
+  _COM.setPins(RX, TX);
 }
 
 void HabCom::setBaudrate(unsigned int speed) {
@@ -22,6 +25,7 @@ void HabCom::setSwPins(int RX, int TX) {
   _HwSerialUsed = false;
   _TX = TX;
   _RX = RX;
+  _COM.setPins(RX, TX);
 }
 
 void HabCom::setSendEnablePin(int pinNumber) {
@@ -56,7 +60,7 @@ bool HabCom::begin() {
     Serial.begin(_speed);
   }
   else {
-    HabCom::_COM = SoftwareSerial(_RX, _TX);
+    HabCom::_COM.setPins(_RX, _TX);
     HabCom::_COM.begin(_speed);
   }
   return true;
@@ -67,6 +71,8 @@ int HabCom::available() {
     return Serial.available();
   else
     return HabCom::_COM.available();
+
+  return 0; // sem uz by se program nikdy nemel dostat, je to jen kvuli kompilatoru
 }
 
 int HabCom::read() {
@@ -86,6 +92,8 @@ byte HabCom::write(byte what) {
     return Serial.write(what);
   else
     return HabCom::_COM.write(what);
+  
+  return 0; // sem uz by se program nikdy nemel dostat, je to jen kvuli kompilatoru
 }
 
 // calculate 8-bit CRC

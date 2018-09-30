@@ -8,10 +8,11 @@
 #define HabCom_h
 
 #include <Arduino.h>
+#include <MySoftSerial.h>
 
 #define HABCOM_MSG_LENGTH 16
 
-class SoftwareSerial;
+// class MySoftSerial;
 
 class HabCom
 {
@@ -85,9 +86,9 @@ class HabCom
     static void blink(byte count = 3, int duration = 200);
 
   private:
-    SoftwareSerial &_COM;
-    int _speed, _TX, _RX;
     bool _HwSerialUsed;
+    int _speed, _TX, _RX;
+    MySoftSerial _COM = MySoftSerial();
     bool _sendEnablePinSet = false;
     int _sendEnablePin;
     byte _deviceAddr = 0x00;
