@@ -1,11 +1,13 @@
 #include <Arduino.h>
 #include <ClickButton.h>
-#include <SoftwareSerial.h>
 #include <EEPROM.h>
-#include "RS485_protocol.h"
-#include "HabComProps.h"
+// #include "RS485_protocol.h"
+// #include "HabComProps.h"
+#include "HabCom.h"
 
 #define DbgMsg(value) (Serial.println(value))
+#define DbgMsgInline(value) (Serial.print(value))
+#define DbgMsgMode(value, mode) (Serial.println(value, mode))
 // #define DbgMsg(value)
 #define BTN_COUNT 4
 
@@ -31,62 +33,10 @@ unsigned long MsgSlotZeroTime;
 byte ledPins[] = {8, 9};
 
 byte myID;
-byte dataRaw[HABCOM_MSG_LENGTH_BYTES];
-byte data_length=0;
-HabComMsg msg = {0,0,CMD_NOT,0};
+byte data[HABCOM_DATA_LENGTH_BYTES];
+HabCom::Message msg = {0,0,HabCom::CMD_NOT,0};
 
-SoftwareSerial rs485(RX_RO,TX_DI);
-
-inline void RS485_mode(int mode) {
-  digitalWrite(TXE, mode);
-}
-
-inline void fWrite(const byte what) {
-  RS485_mode(HABCOM_MODE_SENDER);
-  rs485.write(what);
-  delayMicroseconds(500);
-  RS485_mode(HABCOM_MODE_LISTENER);
-}
-
-inline int fAvailable() {
-  return rs485.available ();
-}
-
-inline int fRead() {
-  return rs485.read ();
-}
-
-void blink(byte count = 3, int duration = 200) {
-  for (byte i = 0; i<count; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(duration);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(duration/2);
-  }
-}
-
-inline bool IsHeartBeat(HabComMsg &msg) {
-  return (msg.Source == HABCOM_MASTER_ADDR && msg.Target == HABCOM_TARGET_BROADCAST && msg.Cmd == HEART_BEAT);
-}
-
-inline void MsgDataDecode(byte *data, HabComMsg &msg) {
-  msg.Source = data[0] >> 2;
-  msg.Target = (data[0] & 0b11) << 4 | data[1] >> 4;
-  msg.Cmd    = (HabComCmd)(data[1] & 15);
-  msg.Data   = (word)data[2] << 8 | (word)data[3];
-}
-
-inline void MsgDataEncode(byte *data, HabComMsg &msg) {
-  data[0] = ((byte)msg.Source) << 2 | ((((byte)msg.Target) >> 4) & 15);
-  data[1] = ((byte)msg.Target) << 4 | ((byte)msg.Cmd);
-  data[2] = (byte)(msg.Data >> 8);
-  data[3] = (byte)(msg.Data & 0b11111111);
-}
-
-void MsgSend(HabComMsg &msg) {
-  MsgDataEncode(dataRaw, msg);
-  sendMsg(fWrite, dataRaw, HABCOM_MSG_LENGTH_BYTES );
-}
+HabCom comm(RX_RO, TX_DI, HABCOM_BAUDRATE);
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -95,9 +45,7 @@ void setup() {
 
   blink(8);
 
-  RS485_mode(HABCOM_MODE_LISTENER);
-
-  rs485.begin(HABCOM_BAUDRATE);
+  comm.begin();
   Serial.begin(9600);
 
   DbgMsg("Init done.");
@@ -109,18 +57,17 @@ void setup() {
   DbgMsg("Waiting for HEART_BEAT");
 
   while (!HeartBeatReceived) {
-    if (!rs485.available()) {
+    if (!comm.available()) {
       delayMicroseconds(10);
       continue;
     }
 
-    data_length = recvMsg(fAvailable, fRead, dataRaw, HABCOM_MSG_LENGTH_BYTES);
-    if (data_length != 4) continue;
+    if (!comm.recvMsg(msg)) continue;
 
     MsgSlotZeroTime = micros();
-    MsgDataDecode(dataRaw, msg);
 
-    HeartBeatReceived = IsHeartBeat(msg);
+    HeartBeatReceived = comm.isHeartBeat(msg);
+    DbgMsgMode(msg.Cmd, BIN);
   }
 
   if (myID == 0x00 || myID == 0xFF) { //ID jeste nebylo nastaveno - ziskat z heart beatu
