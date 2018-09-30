@@ -2,6 +2,15 @@
 #include "HabCom.h"
 #include <MySoftSerial.h>
 
+void blink(byte count /* = 3 */, int duration /* = 200 */) {
+  for (byte i = 0; i<count; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(duration);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(duration/2);
+  }
+}
+
 HabCom::HabCom(unsigned int speed /* = 9600 */) :
   _HwSerialUsed(true),
   _speed(speed)
@@ -15,6 +24,24 @@ HabCom::HabCom(int RX, int TX, unsigned int speed /* = 9600 */) :
   _RX(RX)
 {
   _COM.setPins(RX, TX);
+}
+
+/* static  */ void HabCom::MsgDataDecode(const byte *data, HabCom::Message &msg) {
+  msg.Source = data[0] >> 2;
+  msg.Target = (data[0] & 0b11) << 4 | data[1] >> 4;
+  msg.Cmd    = (Command)(data[1] & 15);
+  msg.Data   = (word)data[2] << 8 | (word)data[3];
+}
+
+/* static */ void HabCom::MsgDataEncode(byte *data, const HabCom::Message &msg) {
+  data[0] = ((byte)msg.Source) << 2 | ((((byte)msg.Target) >> 4) & 15);
+  data[1] = ((byte)msg.Target) << 4 | ((byte)msg.Cmd);
+  data[2] = (byte)(msg.Data >> 8);
+  data[3] = (byte)(msg.Data & 0b11111111);
+}
+
+/* static */ bool HabCom::isHeartBeat(const HabCom::Message &msg) {
+  return (msg.Source == HABCOM_MASTER_ADDR && msg.Target == HABCOM_TARGET_BROADCAST && msg.Cmd == HEART_BEAT);
 }
 
 void HabCom::setBaudrate(unsigned int speed) {
@@ -44,7 +71,7 @@ void HabCom::setStandByTime(unsigned long milliseconds) {
 }
 
 bool HabCom::setDeviceAddr(const byte deviceAddr) {
-  if (deviceAddr == BROADCAST || deviceAddr == MASTER)
+  if (deviceAddr == HABCOM_TARGET_BROADCAST || deviceAddr == HABCOM_MASTER_ADDR)
     return false;
   else if (deviceAddr <= 0 || deviceAddr >= 0xFF)
     return false;
@@ -129,64 +156,50 @@ void HabCom::sendComplemented (const byte what) {
   HabCom::write((c << 4) | (c ^ 0x0F));
 }  // end of sendComplemented
 
-/* static */ void HabCom::blink(byte count /* = 3 */, int duration /* = 200 */) {
-  for (byte i = 0; i<count; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(duration);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(duration/2);
-  }
-}
-
 // void HabCom::println(const int number) {
 //   Serial.println(number);
 // }
 
-bool HabCom::sendMsg (const byte targetAddr, const CMD command, byte * data, const byte length) {
+bool HabCom::sendMsg (const HabCom::Message &msg) {
   if (millis() - _lastMsgTime < _standByTime) return false;
 
-  if (_sendEnablePinSet) digitalWrite(_sendEnablePin, HIGH);
+  if (_sendEnablePinSet) digitalWrite(_sendEnablePin, HABCOM_MODE_SENDER);
 
   // TODO
   // pridat moznost cekani (TIMEOUT) na odeslani zpravy
-  // s nahodnym intervalem cekani
+  // pridat cekani na dalsi vhodnou iteraci sem nebo do hlavni/rodicovske smycky?
 
-  byte datagramm_length = length + 3;
-  byte datagramm[datagramm_length];
+  byte datagramm[HABCOM_MSG_LENGTH_BYTES];
 
-  datagramm[0] = targetAddr;
-  datagramm[1] = command;
-  datagramm[2] =_deviceAddr;
-  // for (int bi = 0; bi < length; bi++) datagramm[bi+3] = data[bi];
-  memcpy(datagramm+3, data, length);
-
+  MsgDataEncode(datagramm, msg);
 
   // for (byte b=0; b<datagramm_length; b++) {
   //   Serial.print(datagramm[b],DEC);
   //   Serial.print(" ");
   // }
   // Serial.print("\n");
-  for (byte b=0; b<datagramm_length; b++) HabCom::_COM.write(datagramm[b]);
+  //TODO: proc je tu nasledujici radek?
+  // for (byte b=0; b<HABCOM_MSG_LENGTH_BYTES; b++) HabCom::_COM.write(datagramm[b]);
   HabCom::write(STX);  // STX
-  for (byte i = 0; i < datagramm_length; i++)
+  for (byte i = 0; i < HABCOM_MSG_LENGTH_BYTES; i++)
     HabCom::sendComplemented(datagramm[i]);
   HabCom::write(ETX);  // ETX
-  HabCom::sendComplemented(crc8 (datagramm, datagramm_length));
+  HabCom::sendComplemented(crc8 (datagramm, HABCOM_MSG_LENGTH_BYTES));
 
-  if (_sendEnablePinSet) digitalWrite(_sendEnablePin, LOW);
+  delay(200);
+
+  if (_sendEnablePinSet) digitalWrite(_sendEnablePin, HABCOM_MODE_LISTENER);
 
   //TODO: nastavit navratovou hodnotu dle uspesnosti odesilani
   return true;
 }  // end of sendMsg
 
-byte HabCom::recvMsg (byte & targetAddr, CMD & command, byte & sourceAddr, byte * data, unsigned long timeout /* = 250 */) {
-  byte data_raw[HABCOM_MSG_LENGTH];
-  byte length = recvMsgRaw(data_raw, HABCOM_MSG_LENGTH, timeout);
-  targetAddr = data_raw[0];
-  command = (CMD)data_raw[1];
-  sourceAddr = data_raw[2];
-  memcpy(data, data_raw + 3, length - 3);
-  return length - 3;
+bool HabCom::recvMsg (HabCom::Message &msg, unsigned long timeout /* = 250 */) {
+  byte data_raw[HABCOM_MSG_LENGTH_BYTES];
+  byte length = recvMsgRaw(data_raw, HABCOM_MSG_LENGTH_BYTES, timeout);
+  if (length==HABCOM_MSG_LENGTH_BYTES) MsgDataDecode(data_raw, msg);
+  //TODO: jakou vracet delku? RAW vs. jen data?
+  return length == HABCOM_DATA_LENGTH_BYTES;
 }
 
 // receive a message, maximum "length" bytes, timeout after "timeout" milliseconds
