@@ -2,12 +2,12 @@
 #include "HabCom.h"
 #include <SoftwareSerial.h>
 
-HabCom::HabCom(unsigned int speed = 9600) {
+HabCom::HabCom(unsigned int speed /* = 9600 */) {
   _HwSerialUsed = true;
   _speed = speed;
 }
 
-HabCom::HabCom(int RX, int TX, unsigned int speed = 9600) {
+HabCom::HabCom(int RX, int TX, unsigned int speed /* = 9600 */) {
   _HwSerialUsed = false;
   _speed = speed;
   _TX = TX;
@@ -121,7 +121,7 @@ void HabCom::sendComplemented (const byte what) {
   HabCom::write((c << 4) | (c ^ 0x0F));
 }  // end of sendComplemented
 
-static void HabCom::blink(byte count = 3, int duration = 200) {
+/* static */ void HabCom::blink(byte count /* = 3 */, int duration /* = 200 */) {
   for (byte i = 0; i<count; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(duration);
@@ -166,13 +166,16 @@ bool HabCom::sendMsg (const byte targetAddr, const CMD command, byte * data, con
   HabCom::sendComplemented(crc8 (datagramm, datagramm_length));
 
   if (_sendEnablePinSet) digitalWrite(_sendEnablePin, LOW);
+
+  //TODO: nastavit navratovou hodnotu dle uspesnosti odesilani
+  return true;
 }  // end of sendMsg
 
-byte HabCom::recvMsg (byte & targetAddr, CMD & command, byte & sourceAddr, byte * data, unsigned long timeout = 250) {
+byte HabCom::recvMsg (byte & targetAddr, CMD & command, byte & sourceAddr, byte * data, unsigned long timeout /* = 250 */) {
   byte data_raw[HABCOM_MSG_LENGTH];
   byte length = recvMsgRaw(data_raw, HABCOM_MSG_LENGTH, timeout);
   targetAddr = data_raw[0];
-  command = data_raw[1];
+  command = (CMD)data_raw[1];
   sourceAddr = data_raw[2];
   memcpy(data, data_raw + 3, length - 3);
   return length - 3;
@@ -183,7 +186,7 @@ byte HabCom::recvMsg (byte & targetAddr, CMD & command, byte & sourceAddr, byte 
 // otherwise, returns length of received data
 byte HabCom::recvMsgRaw (byte * data,                    // buffer to receive into
               const byte length,              // maximum buffer size
-              unsigned long timeout = 250)          // milliseconds before timing out
+              unsigned long timeout /* = 250 */)          // milliseconds before timing out
   {
 
   unsigned long start_time = millis ();

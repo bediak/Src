@@ -15,6 +15,7 @@
 #define HABCOM_MASTER_ADDR 0x00
 #define HABCOM_TARGET_BROADCAST 0x3F // 6bit target addr: 11 11 11
 #define HABCOM_EEPROM_DEV_ID_ADDR 0x00
+#define HABCOM_BAUDRATE 57600
 
 enum HabComCmd {
       CMD_NOT,

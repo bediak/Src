@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include "EasyCom.h"
 
-EasyCom::EasyCom(unsigned int speed = 9600) {
-  _HwSerialUsed = true;
-  _speed = speed;
+EasyCom::EasyCom(unsigned int speed /* = 9600 */) {
+    _HwSerialUsed = true;
+    _speed = speed;
 }
 
-EasyCom::EasyCom(int TX, int RX, unsigned int speed = 9600) {
+EasyCom::EasyCom(int TX, int RX, unsigned int speed /* = 9600 */) {
   _HwSerialUsed = false;
   _speed = speed;
   _TX = TX;
@@ -38,7 +38,7 @@ byte EasyCom::write(const byte what) {
   return Serial.write(what);
 }
 
-void EasyCom::blink(byte count = 3, int duration = 200) {
+void EasyCom::blink(byte count /* = 3 */, int duration /* = 200 */) {
   for (byte i = 0; i<count; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(duration);

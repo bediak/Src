@@ -9,12 +9,11 @@
 
 #include <Arduino.h>
 
-class SoftwareSerial;
+// class SoftwareSerial;
 
 class EasyCom
 {
   public:
-
     EasyCom(unsigned int speed = 9600);
     EasyCom(int TX, int RX, unsigned int speed = 9600);
     void setSwPins(int TX, int RX);
@@ -26,7 +25,7 @@ class EasyCom
     void blink(byte count = 3, int duration = 200);
 
   private:
-    SoftwareSerial &_COM;
+    // SoftwareSerial &_COM;
     int _speed, _TX, _RX;
     bool _HwSerialUsed;
 };

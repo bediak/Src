@@ -69,24 +69,23 @@ inline bool IsHeartBeat(HabComMsg &msg) {
   return (msg.Source == HABCOM_MASTER_ADDR && msg.Target == HABCOM_TARGET_BROADCAST && msg.Cmd == HEART_BEAT);
 }
 
-inline void MsgDataDecode(byte *dataRAW, HabComMsg &msg) {
-  msg.Source = dataRaw[0] >> 2;
-  msg.Target = (dataRaw[0] & 0b11) << 4 | dataRaw[1] >> 4;
-  msg.Cmd    = (HabComCmd)(dataRaw[1] & 15);
-  msg.Data   = (word)dataRaw[2] << 8 | (word)dataRaw[3];
+inline void MsgDataDecode(byte *data, HabComMsg &msg) {
+  msg.Source = data[0] >> 2;
+  msg.Target = (data[0] & 0b11) << 4 | data[1] >> 4;
+  msg.Cmd    = (HabComCmd)(data[1] & 15);
+  msg.Data   = (word)data[2] << 8 | (word)data[3];
 }
 
-inline void MsgDataEncode(byte *dataRAW, HabComMsg &msg) {
-  dataRAW[0] = ((byte)msg.Source) << 2 | (((byte)msg.Target) >> 4) & 15;
-  dataRAW[1] = ((byte)msg.Target) << 2 | (((byte)msg.Cmd) >> 4) & 15;
+inline void MsgDataEncode(byte *data, HabComMsg &msg) {
+  data[0] = ((byte)msg.Source) << 2 | ((((byte)msg.Target) >> 4) & 15);
+  data[1] = ((byte)msg.Target) << 4 | ((byte)msg.Cmd);
+  data[2] = (byte)(msg.Data >> 8);
+  data[3] = (byte)(msg.Data & 0b11111111);
 }
 
-void MsgSend(word *data) {
-
-  MsgDataEncode();
-  
-
-  sendMsg(fWrite, *data, HABCOM_MSG_LENGTH_BYTES );
+void MsgSend(HabComMsg &msg) {
+  MsgDataEncode(dataRaw, msg);
+  sendMsg(fWrite, dataRaw, HABCOM_MSG_LENGTH_BYTES );
 }
 
 void setup() {
@@ -98,7 +97,7 @@ void setup() {
 
   RS485_mode(HABCOM_MODE_LISTENER);
 
-  rs485.begin(57600);
+  rs485.begin(HABCOM_BAUDRATE);
   Serial.begin(9600);
 
   DbgMsg("Init done.");
