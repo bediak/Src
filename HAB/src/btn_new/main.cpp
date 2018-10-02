@@ -46,7 +46,7 @@ void setup() {
   blink(8);
 
   comm.begin();
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   DbgMsg("Init done.");
 
@@ -71,9 +71,10 @@ void setup() {
   }
 
   if (myID == 0x00 || myID == 0xFF) { //ID jeste nebylo nastaveno - ziskat z heart beatu
-    myID = (msg.Data >> 4) & 0b11;
+    myID = msg.Data;
     EEPROM.write(HABCOM_EEPROM_DEV_ID_ADDR, myID);
-    DbgMsg("New ID stored: " + myID);
+    DbgMsgInline("New ID stored: ");
+    DbgMsg(myID);
   }
 
 }

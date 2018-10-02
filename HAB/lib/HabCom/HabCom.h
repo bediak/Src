@@ -10,6 +10,8 @@
 #include <Arduino.h>
 #include <MySoftSerial.h>
 
+#define HABCOM_VERSION 0.8
+#define HABCOM_VERSION_DATE 20181002
 #define HABCOM_MSG_LENGTH_BYTES 4
 #define HABCOM_DATA_LENGTH_BYTES 2
 #define HABCOM_MODE_LISTENER LOW
@@ -18,8 +20,8 @@
 #define HABCOM_TARGET_BROADCAST 0x3F // 6bit target addr: 11 11 11
 #define HABCOM_EEPROM_DEV_ID_ADDR 0x00
 #define HABCOM_BAUDRATE 57600
-#define HABCOM_CYCLE_LENGTH 1000
-#define HABCOM_MSG_START_TOLERANCE 10
+#define HABCOM_CYCLE_LENGTH 1024
+#define HABCOM_MSG_START_TOLERANCE 2
 
 void blink(byte count = 3, int duration = 200);
 
