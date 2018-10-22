@@ -9,7 +9,8 @@
 #define TXE LED_BUILTIN
 
 unsigned long CurrentTime = 0;
-unsigned long NextSlotTime = 0; 
+unsigned long NextSlotTime = 0;
+unsigned int lastTime=millis();
 
 byte data[HABCOM_DATA_LENGTH_BYTES];
 byte cDevices = 0;
@@ -26,6 +27,8 @@ void setup() {
 
 	Serial.begin(57600);
 
+    msgHB.Data = cDevices+1;
+
 	DbgMsg("==============================");
 	DbgMsgInline("HabCom library version: ");
 	DbgMsg(HABCOM_VERSION);
@@ -37,20 +40,26 @@ void setup() {
 	NextSlotTime = (int)(millis()/HABCOM_CYCLE_LENGTH)*HABCOM_CYCLE_LENGTH + HABCOM_CYCLE_LENGTH;
 	DbgMsg("Current Time : " + String(millis()));	//musí být na konci aby nedoslo k "pretecení" slotu
 	DbgMsg("Next Slot Time : " + String(NextSlotTime));	//musí být na konci aby nedoslo k "pretecení" slotu
+    while (millis()<NextSlotTime) {
+        delayMicroseconds(250);
+    }
 }
 
 void loop() {
-    CurrentTime = millis();
-    if (NextSlotTime <= CurrentTime) {
-        if (CurrentTime - NextSlotTime <= HABCOM_MSG_START_TOLERANCE) {
-            msgHB.Data = cDevices+1;
-            comm.sendMsg(msgHB);
-            // DbgMsg((byte)(CurrentTime>>10));
-            DbgMsg(micros());
-        } else {
-            DbgMsg("Slot missed");
-        }
-        NextSlotTime = NextSlotTime + HABCOM_CYCLE_LENGTH; 
-    }
-    delayMicroseconds(250);
+    msgHB.Data = millis()-lastTime;
+    comm.sendMsg(msgHB);
+    delay(HABCOM_CYCLE_LENGTH);
+    // CurrentTime = millis();
+    // if (NextSlotTime <= CurrentTime) {
+    //     if (CurrentTime - NextSlotTime <= HABCOM_MSG_START_TOLERANCE) {
+    //         msgHB.Data = cDevices+1;
+    //         comm.sendMsg(msgHB);
+    //         // DbgMsg((byte)(CurrentTime>>10));
+    //         DbgMsg(micros());
+    //     } else {
+    //         DbgMsg("Slot missed");
+    //     }
+    //     NextSlotTime = NextSlotTime + HABCOM_CYCLE_LENGTH; 
+    // }
+    // delayMicroseconds(250);
 }

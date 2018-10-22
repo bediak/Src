@@ -201,27 +201,24 @@ bool RS485::update ()
           firstNibble_ = true;
 
           // if we have the ETX this must be the CRC
-          if (haveETX_)
-            {
-            if (crc8 (data_, inputPos_) != currentByte_)
-              {
+          if (haveETX_) {
+            if (crc8 (data_, inputPos_) != currentByte_) {
               reset ();
               errorCount_++;
               break;  // bad crc
-              } // end of bad CRC
+            } // end of bad CRC
 
             available_ = true;
             return true;  // show data ready
-            }  // end if have ETX already
+          }  // end if have ETX already
 
           // keep adding if not full
           if (inputPos_ < bufferSize_)
             data_ [inputPos_++] = currentByte_;
-          else
-            {
+          else {
             reset (); // overflow, start again
             errorCount_++;
-            }
+          }
 
           break;
 

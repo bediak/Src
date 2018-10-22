@@ -1,0 +1,16 @@
+P:\Src\LogViewerDemo\LogViewerDemo\bin\Debug\LogViewerDemo.exe.config
+P:\Src\LogViewerDemo\LogViewerDemo\bin\Debug\LogViewerDemo.exe
+P:\Src\LogViewerDemo\LogViewerDemo\bin\Debug\LogViewerDemo.pdb
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.csprojAssemblyReference.cache
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\MainWindow.g.cs
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\App.g.cs
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\GeneratedInternalTypeHelper.g.cs
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo_MarkupCompile.cache
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo_MarkupCompile.lref
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\MainWindow.baml
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.g.resources
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.Properties.Resources.resources
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.csproj.GenerateResource.cache
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.csproj.CoreCompileInputs.cache
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.exe
+P:\Src\LogViewerDemo\LogViewerDemo\obj\Debug\LogViewerDemo.pdb

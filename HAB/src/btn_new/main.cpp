@@ -57,12 +57,12 @@ void setup() {
   DbgMsg("Waiting for HEART_BEAT");
 
   while (!HeartBeatReceived) {
-    if (!comm.available()) {
+    if (!comm.update()) {
       delayMicroseconds(10);
       continue;
     }
 
-    if (!comm.recvMsg(msg)) continue;
+    comm.getMsg(msg);
 
     MsgSlotZeroTime = micros();
 

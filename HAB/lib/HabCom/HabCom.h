@@ -64,6 +64,11 @@ class HabCom
       LED_ON
     };
 
+    enum TERM {
+          STX = '\2',   // start of text
+          ETX = '\3'    // end of text
+    };  // end of enum
+
     struct Message {
         public:
             byte Source;
@@ -71,9 +76,6 @@ class HabCom
             HabCom::Command Cmd;
             word Data;
     };
-
-    static const byte STX = 0x02;
-    static const byte ETX = 0x03;
 
     HabCom(const unsigned int speed = HABCOM_BAUDRATE);
     HabCom(const int RX, const int TX, const unsigned int speed = HABCOM_BAUDRATE);
@@ -83,15 +85,40 @@ class HabCom
     void setSendEnablePin(const int pinNumber);
     void setStandByTime(const unsigned long milliseconds);
     bool setDeviceAddr(const byte deviceAddr);
+
+    // allocate memory for buf_
     bool begin();
-    int available();
     void useSendEnablePin(const bool value);
-    byte recvMsgRaw(byte * data,                    // buffer to receive into
-                  const byte length,              // maximum buffer size
-                  unsigned long timeout = 250);          // milliseconds before timing out
-    bool recvMsg(Message &msg, unsigned long timeout = 250);
     bool sendMsg(const HabCom::Message &msg);
     void println(const int number);
+
+    ~HabCom() { stop(); }
+
+    // free memory in buf_
+    void stop ();
+
+    // handle incoming data, return true if packet ready
+    bool update ();
+
+    // reset to no incoming data (eg. after a timeout)
+    void reset ();
+
+    bool available () const { return available_; };
+
+    // once available, returns the address of the current message
+    byte * getData ()   const { return data_; }
+    void   getMsg (HabCom::Message &msg);
+    byte   getLength () const { return inputPos_; }
+
+    // return how many errors we have had
+    unsigned long getErrorCount () const { return errorCount_; }
+
+    // return when last packet started
+    unsigned long getPacketStartTime () const { return startTime_; }
+
+    // return true if a packet has started to be received
+    bool isPacketStarted () const { return haveSTX_; }
+
 
   private:
     bool _HwSerialUsed;
@@ -102,10 +129,22 @@ class HabCom
     byte _deviceAddr = 0x00;
     unsigned long _standByTime = 100;
     unsigned long _lastMsgTime = 0;
-    byte * data_temp[HABCOM_MSG_LENGTH_BYTES];
+    byte * data_;
 
-    int read();
-    byte write(byte what);
+    bool available_;
+    bool haveSTX_;
+    unsigned long errorCount_;
+
+    bool haveETX_;
+    byte inputPos_;
+    byte currentByte_;
+    bool firstNibble_;
+    unsigned long startTime_;
+
+    int fAvailable();
+    int fRead();
+    size_t fWrite(const byte what);
+    
     static byte crc8 (const byte *addr, byte len);
     void sendComplemented (const byte what);
     void MsgDataDecode( const byte *dataRAW, Message &msg);
