@@ -9,6 +9,6 @@ namespace FileCompare.Model
 {
     public class LogEntry : PropertyChangedBase
     {
-        public string DirPath { get; set; }
+        public string MainItem { get; set; }
     }
 }

@@ -14,6 +14,7 @@ P:\Src\FileCompare\FileCompare\bin\Release\Microsoft.WindowsAPICodePack.xml
 P:\Src\FileCompare\FileCompare\bin\Release\Microsoft.WindowsAPICodePack.Shell.xml
 P:\Src\FileCompare\FileCompare\bin\Release\System.Data.SQLite.xml
 P:\Src\FileCompare\FileCompare\bin\Release\System.Data.SQLite.dll.config
+P:\Src\FileCompare\FileCompare\obj\Release\FileCompare.csprojAssemblyReference.cache
 P:\Src\FileCompare\FileCompare\obj\Release\MainWindow.g.cs
 P:\Src\FileCompare\FileCompare\obj\Release\App.g.cs
 P:\Src\FileCompare\FileCompare\obj\Release\GeneratedInternalTypeHelper.g.cs

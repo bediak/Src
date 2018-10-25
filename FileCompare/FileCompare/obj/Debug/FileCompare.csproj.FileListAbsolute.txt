@@ -27,3 +27,4 @@ P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csproj.CoreCompileInputs.ca
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csproj.CopyComplete
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.exe
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.pdb
+P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csprojAssemblyReference.cache

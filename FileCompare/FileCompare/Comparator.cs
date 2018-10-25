@@ -7,16 +7,19 @@ using System.Data.SQLite;
 using System.Windows;
 using System.Data;
 using FileCompare.Common;
+using FileCompare.Model;
 
 namespace FileCompare
 {
     public class Comparator : PropertyChangedBase
     {
-        public ButtonCommand RunCommand { get; set; }
+        public ButtonCommand AnalyzeCommand { get; set; }
         public ButtonCommand AbortCommand { get; set; }
+        public ButtonCommand EraseDBCommand { get; set; }
+        public ButtonCommand CompareCommand { get; set; }
 
         private const string _StatusMessageDefaultValue = "Select folder and run Compare.";
-        private ObservableCollection<string> _Folders = new ObservableCollection<string>();
+        private ObservableCollection<LogEntry> _LogEntries = new ObservableCollection<LogEntry>();
         private uint _FolderCount = 0, _FileCount = 0;
         private string _RootFolder = String.Empty, _StatusMessage = _StatusMessageDefaultValue, _dbFile = String.Empty;
         private ComparatorStatus _Status = ComparatorStatus.Idle;
@@ -37,17 +40,16 @@ namespace FileCompare
                 OnPropertyChanged();
             }
         }
-        public ObservableCollection<string> Folders
+        public ObservableCollection<LogEntry> LogEntries
         {
-            get { return _Folders; }
+            get { return _LogEntries; }
             private set
             {
-                if (value == _Folders) return;
-                Folders = value;
+                if (value == _LogEntries) return;
+                LogEntries = value;
                 //OnPropertyChanged();
             }
         }
-
         public string DatabaseFile
         {
             get
@@ -116,8 +118,10 @@ namespace FileCompare
 
         public Comparator()
         {
-            RunCommand = new ButtonCommand(this, RunAction, RunActionCondition);
+            AnalyzeCommand = new ButtonCommand(this, AnalyzeAction, RunActionCondition);
             AbortCommand = new ButtonCommand(this, Abort, AbortActionCondition);
+            EraseDBCommand = new ButtonCommand(this, Reset, RunActionCondition);
+            CompareCommand = new ButtonCommand(this, FindDuplicates, RunActionCondition);
             UpdateStatus();
             //_db = new SQLiteConnection("Data Source=:memory:;Version=3;New=True;");
         }
@@ -130,12 +134,31 @@ namespace FileCompare
             _Status = ComparatorStatus.Aborting;
         }
 
+        public void FindDuplicates()
+        {
+            StatusMessage = "Searching for duplicates...";
+            SQLiteCommand cmd = _db.CreateCommand();
+            cmd.CommandText = "SELECT name, path, size, date_mod, date_created, COUNT(*) as c FROM files INNER JOIN folders ON files.parent_folder_id = folders.rowid GROUP BY md5 HAVING c > 1";
+            var dr = cmd.ExecuteReader();
+            if (!dr.HasRows)
+            {
+                StatusMessage = "No duplicates found.";
+                return;
+            }
+            LogEntries.Clear();
+            while (dr.Read())
+            {
+                LogEntries.Add(new LogEntry() { MainItem = string.Format("{0}\\{1}", dr.GetString(1), dr.GetString(0)) });
+            }
+            StatusMessage = String.Format("Found {0} duplicates.", LogEntries.Count);
+        }
+
         private bool AbortActionCondition()
         {
             return Status == ComparatorStatus.Ready;
         }
 
-        private async void RunAction()
+        private async void AnalyzeAction()
         {
             Reset();
             await InitRootAsync();
@@ -178,13 +201,14 @@ namespace FileCompare
                 cmd.CommandText = "SELECT path FROM folders";
                 using (var dr = cmd.ExecuteReader())
                 {
-                    Folders.Clear();
-                    while (dr.Read()) Folders.Add(dr.GetString(0));
-                    FolderCount = (uint)Folders.Count;
-                    if (FolderCount>0) RootFolder = Folders[0];
+                    LogEntries.Clear();
+                    while (dr.Read()) LogEntries.Add(new LogEntry() { MainItem = dr.GetString(0) });
+                    FolderCount = (uint)LogEntries.Count;
+                    if (FolderCount>0) RootFolder = LogEntries[0].MainItem;
                 }
                 cmd.CommandText = "SELECT COUNT(name) FROM files";
                 FileCount = Convert.ToUInt32(cmd.ExecuteScalar());
+                Status = ComparatorStatus.Ready;
             }
         }
 
@@ -202,7 +226,7 @@ namespace FileCompare
         {
             FolderCount = 0;
             FileCount = 0;
-            Folders.Clear();
+            LogEntries.Clear();
             StatusMessage = _StatusMessageDefaultValue;
             SQLiteCommand cmd = _db.CreateCommand();
             cmd.CommandText = "DELETE FROM folders;";
@@ -218,9 +242,9 @@ namespace FileCompare
         {
             SQLiteCommand cmd = _db.CreateCommand();
             long rowid;
-            lock (Folders)
+            lock (LogEntries)
             {
-                Folders.Add(dir.FullName);
+                LogEntries.Add(new LogEntry() { MainItem = dir.FullName });
                 cmd.CommandText = "INSERT INTO folders (path) VALUES (@path)";
                 cmd.Parameters.AddWithValue("@path", dir.FullName);
                 cmd.ExecuteNonQuery();

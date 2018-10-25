@@ -100,13 +100,7 @@ namespace FileCompare
             {
                 engine.OpenDB();
                 engine.LoadFromFile();
-                btnCleanDB.IsEnabled = true;
             }
-        }
-
-        private void Clean_DB(object sender, RoutedEventArgs e)
-        {
-            engine.Reset();
         }
     }
 }
