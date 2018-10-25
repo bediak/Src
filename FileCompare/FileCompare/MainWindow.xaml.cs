@@ -45,7 +45,7 @@ namespace FileCompare
                 using (var dlg = new CommonOpenFileDialog())
                 {
                     dlg.IsFolderPicker = true;
-                    //dlg.InitialDirectory = 
+                    dlg.InitialDirectory = tbPath.Text;
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
                     {
                         tbPath.Text = dlg.FileName;
@@ -56,6 +56,7 @@ namespace FileCompare
             {
                 using (var dlg = new System.Windows.Forms.FolderBrowserDialog())
                 {
+                    dlg.SelectedPath = tbPath.Text;
                     if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
                         tbPath.Text = dlg.SelectedPath;
@@ -75,9 +76,9 @@ namespace FileCompare
                     dlg.EnsurePathExists = true;
                     //dlg.InitialDirectory = 
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok
-                        && engine.dbFile != dlg.FileName)
+                        && engine.DatabaseFile != dlg.FileName)
                     {
-                        engine.dbFile = dlg.FileName;
+                        engine.DatabaseFile = dlg.FileName;
                         changed_path = true;
                     }
                 }
@@ -88,9 +89,9 @@ namespace FileCompare
                 {
                     dlg.CheckPathExists = true;
                     if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK
-                        && engine.dbFile != dlg.FileName)
+                        && engine.DatabaseFile != dlg.FileName)
                     {
-                        engine.dbFile = dlg.FileName;
+                        engine.DatabaseFile = dlg.FileName;
                         changed_path = true;
                     }
                 }

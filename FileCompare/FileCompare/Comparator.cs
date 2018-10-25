@@ -1,79 +1,69 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Data.SQLite;
-using System.Threading;
-using System.ComponentModel;
 using System.Windows;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using System.Windows.Threading;
 using System.Data;
+using FileCompare.Common;
 
 namespace FileCompare
 {
-    public abstract class PropertyChangedBase : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName]string caller = null)
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(caller));
-
-            //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(caller));
-
-            //Application.Current.Dispatcher.BeginInvoke((Action)(() =>
-            //{
-            //    PropertyChangedEventHandler handler = PropertyChanged;
-            //    if (handler != null) handler(this, new PropertyChangedEventArgs(caller));
-            //}));
-        }
-    }
-
-    public class LogEntry: PropertyChangedBase
-    {
-        public string DirPath { get; set; }
-    }
-
     public class Comparator : PropertyChangedBase
     {
+        public ButtonCommand RunCommand { get; set; }
+        public ButtonCommand AbortCommand { get; set; }
 
-        class RunComparatorCommand : ICommand
+        private const string _StatusMessageDefaultValue = "Select folder and run Compare.";
+        private ObservableCollection<string> _Folders = new ObservableCollection<string>();
+        private uint _FolderCount = 0, _FileCount = 0;
+        private string _RootFolder = String.Empty, _StatusMessage = _StatusMessageDefaultValue, _dbFile = String.Empty;
+        private ComparatorStatus _Status = ComparatorStatus.Idle;
+        public enum ComparatorStatus
         {
-            Comparator parent;
-
-            public RunComparatorCommand(Comparator parent)
+            Idle,
+            Ready,
+            Running,
+            Aborting
+        }
+        public ComparatorStatus Status
+        {
+            get { return _Status; }
+            private set
             {
-                this.parent = parent;
-                parent.PropertyChanged += delegate { CanExecuteChanged?.Invoke(this, EventArgs.Empty); };
+                if (value == _Status) return;
+                _Status = value;
+                OnPropertyChanged();
             }
-
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object param)
+        }
+        public ObservableCollection<string> Folders
+        {
+            get { return _Folders; }
+            private set
             {
-                return !string.IsNullOrEmpty(parent.RootFolder) && Directory.Exists(parent.RootFolder) && !string.IsNullOrEmpty(parent.dbFile);
-            }
-
-            public void Execute(object param)
-            {
-                parent.Reset();
-                parent.InitRootAsync();
+                if (value == _Folders) return;
+                Folders = value;
+                //OnPropertyChanged();
             }
         }
 
-        public ICommand RunCommand { get; set; }
-
-        private uint _FolderCount = 0, _FileCount = 0;
-        private string _RootFolder = string.Empty, _StatusMessage = "Select folder and run Compare.";
-        private ObservableCollection<LogEntry> _Folders = new ObservableCollection<LogEntry>();
-
-        public string dbFile;
+        public string DatabaseFile
+        {
+            get
+            {
+                if (String.IsNullOrEmpty(_dbFile))
+                    return "*";
+                else
+                    return _dbFile;
+            }
+            set
+            {
+                if (value == _dbFile) return;
+                _dbFile = value;
+                OnPropertyChanged();
+            }
+        }
         public uint FolderCount {
             get { return _FolderCount; }
             private set
@@ -93,22 +83,13 @@ namespace FileCompare
                 OnPropertyChanged();
             }
         }
-        public ObservableCollection<LogEntry> Folders
-        {
-            get { return _Folders; }
-            private set
-            {
-                if (value == _Folders) return;
-                _Folders = value;
-                OnPropertyChanged();
-            }
-        }
         public String RootFolder {
             get { return _RootFolder; }
             set
             {
                 if (value == _RootFolder) return;
                 _RootFolder = value;
+                UpdateStatus();
                 OnPropertyChanged();
             }
         }
@@ -125,26 +106,60 @@ namespace FileCompare
 
         private SQLiteConnection _db;
 
+        private void UpdateStatus()
+        {
+            if (_db != null && _db.State == ConnectionState.Open && !String.IsNullOrEmpty(_RootFolder) && Directory.Exists(_RootFolder))
+                Status = ComparatorStatus.Ready;
+            else
+                Status = ComparatorStatus.Idle;
+        }
+
         public Comparator()
         {
-            RunCommand = new RunComparatorCommand(this);
+            RunCommand = new ButtonCommand(this, RunAction, RunActionCondition);
+            AbortCommand = new ButtonCommand(this, Abort, AbortActionCondition);
+            UpdateStatus();
             //_db = new SQLiteConnection("Data Source=:memory:;Version=3;New=True;");
+        }
+
+        public void Abort()
+        {
+            if (_Status != ComparatorStatus.Running)
+                throw new InvalidOperationException("Comparator is not running. You can not abort.");
+            if (MessageBox.Show("Are you sure?", "Abort folder processing", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+            _Status = ComparatorStatus.Aborting;
+        }
+
+        private bool AbortActionCondition()
+        {
+            return Status == ComparatorStatus.Ready;
+        }
+
+        private async void RunAction()
+        {
+            Reset();
+            await InitRootAsync();
+        }
+
+        private bool RunActionCondition()
+        {
+            return !string.IsNullOrEmpty(RootFolder) && Directory.Exists(RootFolder) && !string.IsNullOrEmpty(DatabaseFile) && Status==ComparatorStatus.Ready;
         }
 
         public void OpenDB(bool CreateIfNeeded = true)
         {
             bool new_db = false;
 
-            if (!File.Exists(dbFile))
+            if (!File.Exists(DatabaseFile))
             {
                 if (CreateIfNeeded)
                 {
-                    SQLiteConnection.CreateFile(dbFile);
+                    SQLiteConnection.CreateFile(DatabaseFile);
                     new_db = true;
                 }
-                else throw new FileNotFoundException("DB file does not exists", dbFile);
+                else throw new FileNotFoundException("DB file does not exists", DatabaseFile);
             }
-            _db = new SQLiteConnection(string.Format("Data Source={0};Version=3;", dbFile));
+            _db = new SQLiteConnection(string.Format("Data Source={0};Version=3;", DatabaseFile));
             _db.Open();
             if (new_db)
             {
@@ -153,6 +168,7 @@ namespace FileCompare
                 cmd = new SQLiteCommand("CREATE TABLE files (name VARCHAR(255), md5 TEXT, size INT, date_created DATETIME, date_mod DATETIME, parent_folder_id INT REFERENCES folders(rowid))", _db);
                 cmd.ExecuteNonQuery();
             }
+            UpdateStatus();
         }
 
         public void LoadFromFile()
@@ -163,9 +179,9 @@ namespace FileCompare
                 using (var dr = cmd.ExecuteReader())
                 {
                     Folders.Clear();
-                    while (dr.Read())
-                        Folders.Add(new LogEntry() { DirPath = dr.GetString(0) });
+                    while (dr.Read()) Folders.Add(dr.GetString(0));
                     FolderCount = (uint)Folders.Count;
+                    if (FolderCount>0) RootFolder = Folders[0];
                 }
                 cmd.CommandText = "SELECT COUNT(name) FROM files";
                 FileCount = Convert.ToUInt32(cmd.ExecuteScalar());
@@ -187,7 +203,7 @@ namespace FileCompare
             FolderCount = 0;
             FileCount = 0;
             Folders.Clear();
-            StatusMessage = "Select folder and run Compare.";
+            StatusMessage = _StatusMessageDefaultValue;
             SQLiteCommand cmd = _db.CreateCommand();
             cmd.CommandText = "DELETE FROM folders;";
             cmd.ExecuteNonQuery();
@@ -195,6 +211,7 @@ namespace FileCompare
             cmd.ExecuteNonQuery();
             cmd.CommandText = "VACUUM;";
             cmd.ExecuteNonQuery();
+            UpdateStatus();
         }
 
         private long FolderStoreInfo(DirectoryInfo dir)
@@ -203,7 +220,7 @@ namespace FileCompare
             long rowid;
             lock (Folders)
             {
-                Folders.Add(new LogEntry() { DirPath = dir.FullName });
+                Folders.Add(dir.FullName);
                 cmd.CommandText = "INSERT INTO folders (path) VALUES (@path)";
                 cmd.Parameters.AddWithValue("@path", dir.FullName);
                 cmd.ExecuteNonQuery();
@@ -238,23 +255,30 @@ namespace FileCompare
 
             foreach (var fl in dir.EnumerateFiles())
             {
+                if (_Status == ComparatorStatus.Aborting) return;
                 await FileProcessAsync(rowid, fl);
             }
             foreach (var subdir in dir.EnumerateDirectories())
             {
+                if (_Status == ComparatorStatus.Aborting) return;
                 await ProcessFolderAsync(subdir);
             }
         }
 
         public async Task InitRootAsync()
         {
-            StatusMessage = "Processing...";
+            if (Status != ComparatorStatus.Ready)
+                throw new InvalidOperationException("Comparator is not ready. Configure it first.");
+
+            StatusMessage = "Processing... (F8 for abort)";
+            Status = ComparatorStatus.Running;
 
             DirectoryInfo root = new DirectoryInfo(RootFolder);
 
             await ProcessFolderAsync(root);
 
-            StatusMessage = "Done.";
+            StatusMessage = _Status==ComparatorStatus.Aborting?"Aborted.":"Done.";
+            Status = ComparatorStatus.Ready;
         }
 
         public async Task InitRootAsync(string RootFolderPath)

@@ -1,13 +1,15 @@
-﻿<Window x:Class="FileCompare.FileComparator"
+﻿<Window xmlns:Controls="clr-namespace:FileCompare.Controls"  x:Class="FileCompare.FileComparator"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:src="clr-namespace:FileCompare.Common"
         xmlns:local="clr-namespace:FileCompare"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         mc:Ignorable="d"
-        Title="File Compare" Height="450" Width="728" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
-    <!--xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"-->
+        Title="{Binding DatabaseFile, StringFormat='File Compare - {0}', diag:PresentationTraceSources.TraceLevel=High}" Height="450" Width="728" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
+
     <Window.Resources>
         <Style TargetType="ItemsControl" x:Key="LogViewerStyle">
             <Setter Property="Template">
@@ -29,11 +31,11 @@
             </Setter>
         </Style>
 
-        <DataTemplate DataType="{x:Type local:LogEntry}">
-            <TextBlock Text="{Binding DirPath}" />
+        <!--
+        <DataTemplate DataType="{x:Type local:Comparator}">
+            <TextBlock Text="{Binding}" />
         </DataTemplate>
-
-        <!--<DataTemplate DataType="{x:Type local:CollapsibleLogEntry}">
+        <DataTemplate DataType="{x:Type local:CollapsibleLogEntry}">
             <Grid IsSharedSizeScope="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition SharedSizeGroup="Index" Width="Auto"/>
@@ -71,22 +73,29 @@
             </DataTemplate.Triggers>
         </DataTemplate>-->
     </Window.Resources>
+
+    <Window.InputBindings>
+        <!--<KeyBinding Command="{Binding AbortCommand}" Key="F8" />-->
+        <KeyBinding Command="{Binding AbortCommand, diag:PresentationTraceSources.TraceLevel=High}" Key="Q" Modifiers="Ctrl" />
+    </Window.InputBindings>
+
     <DockPanel LastChildFill="True">
-        <ToolBarTray DockPanel.Dock="Top" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
-            <ToolBar Width="Auto" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
+        <ToolBarTray DockPanel.Dock="Top" Background="Transparent">
+            <Controls:ToolBar Width="Auto" DockPanel.Dock="Top" OverflowToggleButtonBackground="#00000000" Background="#00000000">
                 <Button x:Name="btnOpenDB" ToolTip="Choose DB to open." Click="Open_DB">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="Images/db_open.png" Height="16"/>
+                        <Image Source="Images\db_open.png" Height="16"/>
                         <TextBlock Margin="3,0,3,0" VerticalAlignment="Center">Open</TextBlock>
                     </StackPanel>
                 </Button>
+                <Separator />
                 <Button x:Name="btnCleanDB" ToolTip="Clean/erase currently opened DB." Click="Clean_DB" IsEnabled="False">
                     <StackPanel Orientation="Horizontal" IsEnabled="False" AutomationProperties.Name="btnCleanDB">
-                        <Image Source="Images/db_clean.png" Height="16"/>
+                        <Image Source="Images\db_clean.png" Height="16"/>
                         <TextBlock Margin="3,0,3,0" VerticalAlignment="Center">Clean</TextBlock>
                     </StackPanel>
                 </Button>
-            </ToolBar>
+            </Controls:ToolBar>
         </ToolBarTray>
         <DockPanel LastChildFill="True" DockPanel.Dock="Top" Margin="8">
             <Label Content="Selected folder:" Margin="0,0,0,0" DockPanel.Dock="Left"/>
@@ -136,7 +145,7 @@
             </ItemsControl.Template>
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel IsItemsHost="True"/>
+                    <VirtualizingStackPanel IsItemsHost="True" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
