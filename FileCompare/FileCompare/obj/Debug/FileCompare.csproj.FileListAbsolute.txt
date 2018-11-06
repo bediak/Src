@@ -14,6 +14,7 @@ P:\Src\FileCompare\FileCompare\bin\Debug\Microsoft.WindowsAPICodePack.xml
 P:\Src\FileCompare\FileCompare\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml
 P:\Src\FileCompare\FileCompare\bin\Debug\System.Data.SQLite.xml
 P:\Src\FileCompare\FileCompare\bin\Debug\System.Data.SQLite.dll.config
+P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csprojAssemblyReference.cache
 P:\Src\FileCompare\FileCompare\obj\Debug\MainWindow.g.cs
 P:\Src\FileCompare\FileCompare\obj\Debug\App.g.cs
 P:\Src\FileCompare\FileCompare\obj\Debug\GeneratedInternalTypeHelper.g.cs
@@ -27,4 +28,3 @@ P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csproj.CoreCompileInputs.ca
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csproj.CopyComplete
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.exe
 P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.pdb
-P:\Src\FileCompare\FileCompare\obj\Debug\FileCompare.csprojAssemblyReference.cache

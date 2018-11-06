@@ -93,8 +93,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Common\ButtonCommand.cs" />
+    <Compile Include="Common\CommandAsync.cs" />
+    <Compile Include="Common\ScrollViewerAutoScroll.cs" />
     <Compile Include="Common\PropertyChangedBase.cs" />
-    <Compile Include="Comparator.cs" />
+    <Compile Include="ViewModel\Comparator.cs" />
+    <Compile Include="Common\MessageBoxHelper.cs" />
     <Compile Include="Controls\ToolBar.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -143,6 +146,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\app_big.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\cancel.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets')" />

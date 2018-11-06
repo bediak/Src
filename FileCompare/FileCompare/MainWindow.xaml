@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:Model="clr-namespace:FileCompare.Model"
+        xmlns:Common="clr-namespace:FileCompare.Common"
         xmlns:local="clr-namespace:FileCompare"
         xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         mc:Ignorable="d"
@@ -31,9 +32,30 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="DuplicatesBorder" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="0 0 0 1" />
+            <Setter Property="BorderBrush" Value="Gray" />
+        </Style>
 
         <DataTemplate DataType="{x:Type Model:LogEntry}">
-            <TextBlock Text="{Binding MainItem}" />
+            <Border Style="{StaticResource DuplicatesBorder}">
+                <TextBlock Text="{Binding MainItem}" Padding="3,1,0,0" />
+            </Border>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type Model:ItemDuplicates}">
+            <Grid IsSharedSizeScope="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition SharedSizeGroup="checkbox" Width="Auto" />
+                    <ColumnDefinition SharedSizeGroup="filepath" Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Grid.Column="1" Text="{Binding FilePath}" Padding="1,1,30,0" />
+            </Grid>
         </DataTemplate>
 
         <!--
@@ -76,11 +98,6 @@
         </DataTemplate>-->
     </Window.Resources>
 
-    <Window.InputBindings>
-        <!--<KeyBinding Command="{Binding AbortCommand}" Key="F8" />-->
-        <KeyBinding Command="{Binding AbortCommand}" Key="Q" Modifiers="Ctrl" />
-    </Window.InputBindings>
-
     <DockPanel LastChildFill="True">
         <ToolBarTray DockPanel.Dock="Top" Background="Transparent">
             <Controls:ToolBar Width="Auto" DockPanel.Dock="Top" OverflowToggleButtonBackground="#00000000" Background="#00000000">
@@ -104,6 +121,13 @@
                         <TextBlock Margin="3,0,3,0" VerticalAlignment="Center">Analyze</TextBlock>
                     </StackPanel>
                 </Button>
+                <Button x:Name="btnAbort" Command="{Binding AbortCommand}" ToolTip="Abort folder processing.">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Images\cancel.png" Height="16"/>
+                        <TextBlock Margin="3,0,3,0" VerticalAlignment="Center">Abort</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Separator />
                 <Button x:Name="btnCompare" Command="{Binding CompareCommand}" ToolTip="Search DB for duplicates and list them.">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="Images\compare.png" Height="16"/>
@@ -152,14 +176,14 @@
         <ItemsControl x:Name="log" ItemsSource="{Binding LogEntries, UpdateSourceTrigger=PropertyChanged}" Margin="8" Style="{StaticResource LogViewerStyle}">
             <ItemsControl.Template>
                 <ControlTemplate>
-                    <ScrollViewer CanContentScroll="True">
-                        <ItemsPresenter/>
+                    <ScrollViewer CanContentScroll="True" Common:AutoScrollBehavior.AutoScroll="True" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Padding="3">
+                        <ItemsPresenter />
                     </ScrollViewer>
                 </ControlTemplate>
             </ItemsControl.Template>
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel IsItemsHost="True" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
+                    <VirtualizingStackPanel IsItemsHost="True"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
